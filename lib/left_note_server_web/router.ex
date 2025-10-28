@@ -7,7 +7,9 @@ defmodule LeftNoteServerWeb.Router do
 
   scope "/api", LeftNoteServerWeb do
     pipe_through :api
+    resources "/versions", VersionController
   end
+
 
   # Enable LiveDashboard and Swoosh mailbox preview in development
   if Application.compile_env(:left_note_server, :dev_routes) do
