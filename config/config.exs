@@ -49,6 +49,13 @@ config :logger, :default_formatter,
 # Use Jason for JSON parsing in Phoenix
 config :phoenix, :json_library, Jason
 
+config :cors_plug,
+  origin: ["http://localhost:3000"],
+  allow_methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allow_headers: ["Authorization", "Content-Type", "Accept", "Origin", "X-Requested-With", "X-CSRF-Token"],
+  max_age: 86400,
+  log: false
+
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
 import_config "#{config_env()}.exs"

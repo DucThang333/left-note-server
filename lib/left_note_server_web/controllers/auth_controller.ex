@@ -1,20 +1,41 @@
 defmodule LeftNoteServerWeb.AuthController do
   use LeftNoteServerWeb, :controller
 
-  # alias LeftNoteServer.{AuthService}
-
-  import LeftNoteServerWeb.ResponseController
-
+  alias LeftNoteServer.{AuthService}
+  alias LeftNoteServer.Helper.Utils
 
   def login(conn, params) do
-    user_name = params["user_name"]
+    username = params["username"]
     password = params["password"]
 
-    user = AuthService.login(user_name, password)
+    res =
+      AuthService.login(%{
+        "username" => username,
+        "password" => password
+      })
 
-    res_success(conn, user)
-
+    conn
+    |> put_status(res.status)
+    |> json(res)
   end
 
+  def register(conn, params) do
+    username = params["username"]
+    password = params["password"]
+    email = params["email"]
 
+    register_params =
+      %{
+        "username" => username,
+        "password" => password,
+        "email" => email
+      }
+      |> Utils.remove_nil_from_map()
+
+    res = AuthService.register(register_params)
+
+    conn
+    |> put_status(res.status)
+    |> json(res)
+  end
 end

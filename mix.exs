@@ -55,7 +55,10 @@ defmodule LeftNoteServer.MixProject do
       {:bandit, "~> 1.5"},
       {:dotenvy, "~> 1.0"},
       # Using for generator schema from database to source
-      {:introspex, "~> 0.2.0", only: :dev}
+      {:introspex, "~> 0.2.0", only: :dev},
+      {:bcrypt_elixir, "~> 3.3"},
+      {:joken, "~> 2.6"},
+      {:cors_plug, "~> 3.0"}
     ]
   end
 

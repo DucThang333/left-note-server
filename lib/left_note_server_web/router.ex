@@ -1,15 +1,37 @@
 defmodule LeftNoteServerWeb.Router do
-  use LeftNoteServerWeb, :router
+  use Phoenix.Router
 
-  pipeline :api do
+  alias LeftNoteServerWeb.{AuthController, VersionController}
+
+  pipeline :api_private do
     plug :accepts, ["json"]
+    plug CORSPlug
+    plug LeftNoteServerWeb.Plugs.Authentication
   end
 
-  scope "/api", LeftNoteServerWeb do
-    pipe_through :api
-    resources "/versions", VersionController
+  pipeline :api_public do
+    plug :accepts, ["json"]
+    plug CORSPlug
   end
 
+  scope "/api" do
+    pipe_through :api_private
+
+    get("/version", VersionController, :index)
+  end
+
+  scope "/api/v1" do
+    pipe_through :api_public
+
+    scope "/auth" do
+      post("/login", AuthController, :login)
+      post("/register", AuthController, :register)
+    end
+  end
+
+  scope "/api/v1" do
+    pipe_through :api_private
+  end
 
   # Enable LiveDashboard and Swoosh mailbox preview in development
   if Application.compile_env(:left_note_server, :dev_routes) do
