@@ -40,7 +40,7 @@ defmodule LeftNoteServerWeb.Endpoint do
   plug Plug.RequestId
   plug Plug.Telemetry, event_prefix: [:phoenix, :endpoint]
 
-  plug CORSPlug
+  plug CORSPlug, options: [origin: "*", max_age: 86400]
 
   plug Plug.Parsers,
     parsers: [:urlencoded, :multipart, :json],

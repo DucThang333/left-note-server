@@ -1,5 +1,5 @@
 defmodule LeftNoteServer.AuthService do
-  alias LeftNoteServer.{Users, Repo}
+  alias LeftNoteServer.{Users, Repo, RefreshToken}
   alias Bcrypt
   alias LeftNoteServer.Token
 
@@ -7,18 +7,40 @@ defmodule LeftNoteServer.AuthService do
   import Ecto.Query
 
   def login(%{"username" => username, "password" => password}) do
-    user = Users.get(%{username: username})
+    user = Users.get_by(%{username: username})
 
-    if user && Bcrypt.verify_pass(password, user.password_hash) do
-      user_claims = Users.render(user)
-      signer = Token.get_signer!()
-      token = Token.generate_and_sign!(user_claims, signer)
+    Repo.transaction(fn ->
+      if user && Bcrypt.verify_pass(password, user.password_hash) do
+        user_claims = Users.render(user)
+        signer = Token.signer()
+        token = Token.generate_and_sign!(user_claims, signer)
+        refresh_token = :crypto.strong_rand_bytes(32) |> Base.url_encode64(padding: false)
 
-      res_success(%{
-        token: token
-      })
-    else
-      res_not_found()
+        # revoke old refresh token
+        RefreshToken.bulk_update([user_id: user.id], revoked: true)
+
+        RefreshToken.create(%{
+          user_id: user.id,
+          token_hash: refresh_token,
+          # expires after 30 days
+          expires_at: DateTime.add(DateTime.utc_now(), 30, :day)
+        })
+
+        res_success(%{
+          token: token,
+          user: user_claims,
+          refresh_token: refresh_token
+        })
+      else
+        res_not_found()
+      end
+    end)
+    |> case do
+      {:ok, res} ->
+        res
+
+      {:error, error} ->
+        res_error(error)
     end
   end
 
@@ -42,5 +64,17 @@ defmodule LeftNoteServer.AuthService do
 
   def register(_params) do
     res_bad_request()
+  end
+
+  def logout(token_hash) do
+    RefreshToken.get_by(%{token_hash: token_hash})
+    |> case do
+      nil ->
+        res_not_found()
+
+      refresh_token ->
+        RefreshToken.update(refresh_token, %{revoked: true})
+        res_success("Logout successfully")
+    end
   end
 end

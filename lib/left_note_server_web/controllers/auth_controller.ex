@@ -38,4 +38,14 @@ defmodule LeftNoteServerWeb.AuthController do
     |> put_status(res.status)
     |> json(res)
   end
+
+  def logout(conn, params) do
+    token_hash = params["refresh_token"]
+
+    res = AuthService.logout(token_hash)
+
+    conn
+    |> put_status(res.status)
+    |> json(res)
+  end
 end

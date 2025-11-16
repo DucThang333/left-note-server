@@ -2,11 +2,11 @@ import Config
 
 # Configure your database
 config :left_note_server, LeftNoteServer.Repo,
-  username: System.get_env("DB_USER") ,
-  password: System.get_env("DB_PASSWORD") ,
-  hostname: System.get_env("DB_HOST") ,
-  database: System.get_env("DB_NAME") ,
-  port: System.get_env("DB_PORT") ,
+  username: System.get_env("DB_USER") || "admin",
+  password: System.get_env("DB_PASSWORD") || "thang2001",
+  hostname: System.get_env("DB_HOST") || "localhost",
+  database: System.get_env("DB_NAME") || "left_note",
+  port: System.get_env("DB_PORT") || "5431",
   stacktrace: true,
   show_sensitive_data_on_connection_error: true,
   pool_size: 10

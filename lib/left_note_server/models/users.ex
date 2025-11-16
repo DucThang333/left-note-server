@@ -4,6 +4,7 @@ defmodule LeftNoteServer.Users do
   import Ecto.Changeset
 
   alias LeftNoteServer.{Repo}
+  alias LeftNoteServer.Helper.Utils
 
   @primary_key {:id, :binary_id, autogenerate: true}
   @foreign_key_type :binary_id
@@ -11,15 +12,27 @@ defmodule LeftNoteServer.Users do
   schema "users" do
     field :username, :string
     field :email, :string
+    field :avatar, :string
+    field :name, :string
     field :password_hash, :string
     field :created_at, :naive_datetime
+    field :updated_at, :naive_datetime
     field :is_deleted, :boolean, default: false
   end
 
   @doc false
   def changeset(schema, attrs) do
     schema
-    |> cast(attrs, [:username, :email, :password_hash, :created_at, :is_deleted])
+    |> cast(attrs, [
+      :username,
+      :email,
+      :avatar,
+      :name,
+      :password_hash,
+      :created_at,
+      :updated_at,
+      :is_deleted
+    ])
     |> validate_required([:username, :email, :password_hash])
     |> unique_constraint(:email)
     |> unique_constraint(:username)
@@ -29,7 +42,11 @@ defmodule LeftNoteServer.Users do
     Repo.all(__MODULE__)
   end
 
-  def get(params) do
+  def get(id) do
+    Repo.get(__MODULE__, id)
+  end
+
+  def get_by(params) do
     Repo.get_by(__MODULE__, params)
   end
 
@@ -66,12 +83,17 @@ defmodule LeftNoteServer.Users do
   end
 
   def render(user, opt) when is_map(opt) do
+    user = user |> Map.from_struct() |> Utils.parse_atom()
+
     result = %{
-      id: user.id,
-      username: user.username,
-      email: user.email,
-      created_at: user.created_at,
-      is_deleted: user.is_deleted
+      id: user[:id],
+      username: user[:username],
+      email: user[:email],
+      avatar: user[:avatar],
+      name: user[:name],
+      created_at: user[:created_at],
+      updated_at: user[:updated_at],
+      is_deleted: user[:is_deleted]
     }
 
     result =

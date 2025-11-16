@@ -20,13 +20,13 @@ defmodule LeftNoteServer.Helper.Utils do
   end
 
   def parse_atom(obj) when is_map(obj) do
-    Enum.reduce(obj, %{}, fn {key, value}, acc ->
-      Map.put(acc, key, value)
-    end)
+    for {k, v} <- obj, into: %{} do
+      key = if is_binary(k), do: String.to_atom(k), else: k
+      {key, v}
+    end
   end
 
   def parse_atom(obj) do
     obj
   end
-
 end

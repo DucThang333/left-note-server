@@ -18,15 +18,19 @@ defmodule LeftNoteServer.Tags do
     many_to_many :notes, LeftNoteServer.Notes, join_through: "note_tags"
   end
 
-  
   @doc false
   def changeset(schema, attrs) do
     schema
-    |> cast(attrs, [:object, :object_id, :tag_id, :name, :description, :created_at, :updated_at, :is_archived])
+    |> cast(attrs, [
+      :object,
+      :object_id,
+      :tag_id,
+      :name,
+      :description,
+      :created_at,
+      :updated_at,
+      :is_archived
+    ])
     |> validate_required([:object, :object_id, :name])
-    
-    
-    
   end
-
 end

@@ -1,9 +1,14 @@
-defmodule LeftNoteServer.Services.UserService do
+defmodule LeftNoteServer.UserService do
   alias LeftNoteServer.{Users}
-
+  import LeftNoteServer.ResponseService
 
   def get_user(id) do
-    Users.get(id)
+    user = Users.get(id)
+
+    case user do
+      nil -> res_not_found()
+      _ -> res_success(%{user: Users.render(user)})
+    end
   end
 
   def create_user(attrs) do

@@ -42,4 +42,6 @@ public.pem
 # Ignore tool versions
 .tool-versions
 
+.vscode
+
 
