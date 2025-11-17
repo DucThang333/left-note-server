@@ -1,11 +1,10 @@
-defmodule LeftNoteServer.Notebooks do
+defmodule LeftNoteServer.Notebook do
   @moduledoc false
   use Ecto.Schema
 
   import Ecto.Changeset
-  import Ecto.Query
 
-  alias LeftNoteServer.{Repo, Notes, Users, Helper}
+  alias LeftNoteServer.{Repo, NoteHasContent, Note, User, Helper}
 
   @primary_key {:id, :binary_id, autogenerate: true}
   @foreign_key_type :binary_id
@@ -18,10 +17,8 @@ defmodule LeftNoteServer.Notebooks do
     field :is_archived, :boolean, default: false
 
     # Self-referencing fields
-    belongs_to :parent_notebook, __MODULE__, foreign_key: :notebook_id
-    has_many :child_notebooks, __MODULE__, foreign_key: :notebook_id
-    has_many :notes, Notes, foreign_key: :notebook_id
-    belongs_to :user, Users, foreign_key: :user_id
+    has_many :notes, NoteHasContent, foreign_key: :notebook_id
+    belongs_to :user, User, foreign_key: :user_id
   end
 
   @doc false
@@ -52,9 +49,7 @@ defmodule LeftNoteServer.Notebooks do
     |> Repo.insert()
   end
 
-  def all(query) do
-    Repo.all(query)
-  end
+  def all(query, opts \\ []), do: Repo.all(query, opts)
 
   def render(notebooks, opts \\ [])
   def render(notebooks, opts) when is_list(notebooks), do: Enum.map(notebooks, &render(&1, opts))
@@ -79,7 +74,7 @@ defmodule LeftNoteServer.Notebooks do
     # add note
     data =
       if opts[:include_notes],
-        do: Map.put(data, :notes, Notes.render(notebook[:notes] )),
+        do: Map.put(data, :notes, Note.render(notebook[:notes])),
         else: data
 
     data
@@ -95,12 +90,12 @@ defmodule LeftNoteServer.Notebooks do
     |> Repo.update()
   end
 
-  def preload(notebooks, opts \\ []) do
+  def preload(notebooks, opts \\ {}) do
     data = notebooks
 
     # load note
     data =
-      if opts[:include_notes] && Ecto.assoc_loaded?(data[:notes]),
+      if opts[:include_notes] && Ecto.assoc_loaded?(data.notes),
         do: Repo.preload(data, :notes),
         else: data
 

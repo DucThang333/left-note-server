@@ -11,5 +11,7 @@
   },
   "[elixir]": {
     "editor.formatOnSave": true
-  }
+  },
+  "elixirLS.dialyzerEnabled": false
+
 }

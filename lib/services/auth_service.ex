@@ -1,5 +1,5 @@
 defmodule LeftNoteServer.AuthService do
-  alias LeftNoteServer.{Users, Repo, RefreshToken}
+  alias LeftNoteServer.{User, Repo, RefreshToken}
   alias Bcrypt
   alias LeftNoteServer.Token
 
@@ -7,11 +7,11 @@ defmodule LeftNoteServer.AuthService do
   import Ecto.Query
 
   def login(%{"username" => username, "password" => password}) do
-    user = Users.get_by(%{username: username})
+    user = User.get_by(%{username: username})
 
     Repo.transaction(fn ->
       if user && Bcrypt.verify_pass(password, user.password_hash) do
-        user_claims = Users.render(user)
+        user_claims = User.render(user)
         signer = Token.signer()
         token = Token.generate_and_sign!(user_claims, signer)
         refresh_token = :crypto.strong_rand_bytes(32) |> Base.url_encode64(padding: false)
@@ -51,10 +51,10 @@ defmodule LeftNoteServer.AuthService do
       email: email
     }
 
-    Repo.one(from u in Users, where: u.username == ^username or u.email == ^email)
+    Repo.one(from u in User, where: u.username == ^username or u.email == ^email)
     |> case do
       nil ->
-        user_created = Users.create(user) |> Users.render()
+        user_created = User.create(user) |> User.render()
         res_success(user_created)
 
       _ ->

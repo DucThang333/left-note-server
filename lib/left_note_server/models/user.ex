@@ -1,4 +1,4 @@
-defmodule LeftNoteServer.Users do
+defmodule LeftNoteServer.User do
   @moduledoc false
   use Ecto.Schema
   import Ecto.Changeset

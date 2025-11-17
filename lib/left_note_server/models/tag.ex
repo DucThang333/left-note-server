@@ -1,4 +1,4 @@
-defmodule LeftNoteServer.Tags do
+defmodule LeftNoteServer.Tag do
   @moduledoc false
   use Ecto.Schema
   import Ecto.Changeset
@@ -15,7 +15,7 @@ defmodule LeftNoteServer.Tags do
     field :created_at, :naive_datetime
     field :updated_at, :naive_datetime
     field :is_archived, :boolean
-    many_to_many :notes, LeftNoteServer.Notes, join_through: "note_tags"
+    many_to_many :notes, LeftNoteServer.Note, join_through: "note_tags"
   end
 
   @doc false

@@ -1,8 +1,8 @@
 defmodule LeftNoteServer.NoteService do
   import LeftNoteServer.ResponseService
 
-  alias LeftNoteServer.Notes
-  alias LeftNoteServer.Notebooks
+  alias LeftNoteServer.Note
+  alias LeftNoteServer.Notebook
   alias LeftNoteServer.Helper.Utils
 
   def create(params) do
@@ -10,12 +10,12 @@ defmodule LeftNoteServer.NoteService do
 
     notebook_id = params["notebook_id"]
 
-    notebook = Notebooks.get(notebook_id)
+    notebook = Notebook.get(notebook_id)
 
     if notebook.user_id != current_user[:id] do
       res_bad_request("You are not authorized to create a note in this notebook")
     else
-      Notes.create(
+      Note.create(
         %{
           "notebook_id" => notebook_id,
           "title" => params["title"],
@@ -27,7 +27,7 @@ defmodule LeftNoteServer.NoteService do
       |> case do
         {:ok, note} ->
           res_success(%{
-            note: Notes.render(note)
+            note: Note.render(note)
           })
 
         {:error, error} ->
@@ -39,11 +39,11 @@ defmodule LeftNoteServer.NoteService do
   def update(params) do
     id = params["id"]
 
-    Notes.update(id, params)
+    Note.update(id, params)
     |> case do
       {:ok, note} ->
         res_success(%{
-          note: Notes.render(note)
+          note: Note.render(note)
         })
 
       {:error, error} ->
@@ -54,11 +54,11 @@ defmodule LeftNoteServer.NoteService do
   def delete(params) do
     id = params["id"]
 
-    Notes.delete(id)
+    Note.delete(id)
     |> case do
       {:ok, note} ->
         res_success(%{
-          note: Notes.render(note)
+          note: Note.render(note)
         })
 
       {:error, error} ->

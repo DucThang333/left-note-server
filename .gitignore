@@ -43,5 +43,7 @@ public.pem
 .tool-versions
 
 .vscode
+.vscode/*
+/.vscode/settings.json
 
 

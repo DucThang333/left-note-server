@@ -1,5 +1,5 @@
 defmodule LeftNoteServer.NotebookService do
-  alias LeftNoteServer.{Notebooks}
+  alias LeftNoteServer.{Notebook}
 
   import LeftNoteServer.ResponseService
   import Ecto.Query
@@ -7,9 +7,9 @@ defmodule LeftNoteServer.NotebookService do
   def get_notebooks() do
     current_user = Process.get(:current_user)
 
-    query = from n in Notebooks, where: n.user_id == ^current_user[:id] and n.is_archived == false
+    query = from n in Notebook, where: n.user_id == ^current_user[:id] and n.is_archived == false
 
-    notebooks = Notebooks.all(query) |> renderDefault()
+    notebooks = Notebook.all(query) |> renderDefault()
 
     res_success(%{
       notebooks: notebooks
@@ -21,7 +21,7 @@ defmodule LeftNoteServer.NotebookService do
 
     params = Map.put(params, "user_id", current_user[:id])
 
-    Notebooks.create(params)
+    Notebook.create(params)
     |> case do
       {:ok, notebook} ->
         notebook = notebook |> renderDefault()
@@ -38,13 +38,13 @@ defmodule LeftNoteServer.NotebookService do
   def update(params) do
     id = params["id"]
 
-    Notebooks.get(id)
+    Notebook.get(id)
     |> case do
       nil ->
         res_not_found()
 
       notebook ->
-        Notebooks.update(notebook, params)
+        Notebook.update(notebook, params)
         |> case do
           {:ok, notebook} ->
             notebook = notebook |> renderDefault()
@@ -64,9 +64,9 @@ defmodule LeftNoteServer.NotebookService do
 
     notebooks = get_all_notebooks(id)
 
-    query = from n in Notebooks, where: n.id in ^Enum.map(notebooks, & &1.id)
+    query = from n in Notebook, where: n.id in ^Enum.map(notebooks, & &1.id)
 
-    Notebooks.bulk_update(query, is_archived: true)
+    Notebook.bulk_update(query, is_archived: true)
     |> case do
       {count, _} ->
         res_success(%{
@@ -80,7 +80,7 @@ defmodule LeftNoteServer.NotebookService do
   end
 
   defp get_all_notebooks(root) when is_binary(root) do
-    Notebooks.get(root)
+    Notebook.get(root)
     |> case do
       nil ->
         res_not_found()
@@ -91,9 +91,9 @@ defmodule LeftNoteServer.NotebookService do
   end
 
   defp get_all_notebooks(root) do
-    query = from n in Notebooks, where: n.notebook_id == ^root.id
+    query = from n in Notebook, where: n.notebook_id == ^root.id
 
-    notebooks = Notebooks.all(query) |> Enum.flat_map(&get_all_notebooks/1)
+    notebooks = Notebook.all(query) |> Enum.flat_map(&get_all_notebooks/1)
 
     [root | notebooks]
   end
@@ -101,6 +101,6 @@ defmodule LeftNoteServer.NotebookService do
   defp renderDefault(notebooks) when is_list(notebooks), do: Enum.map(notebooks, &renderDefault/1)
 
   defp renderDefault(notebook) do
-    notebook |> Notebooks.preload(include_notes: true) |> Notebooks.render(include_notes: true)
+    notebook |> Notebook.preload(%{include_notes: true}) |> Notebook.render(include_notes: true)
   end
 end

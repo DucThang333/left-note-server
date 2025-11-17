@@ -1,7 +1,23 @@
-defmodule LeftNoteServer.Notes do
+defmodule LeftNoteServer.NoteFields do
+  defmacro fields do
+    quote do
+      field :title, :string
+      field :description, :string
+      field :created_at, :naive_datetime
+      field :updated_at, :naive_datetime
+      field :is_archived, :boolean
+      belongs_to :notebooks, LeftNoteServer.Notebook, foreign_key: :notebook_id
+      many_to_many :tags, LeftNoteServer.Tag, join_through: "note_tags"
+    end
+  end
+end
+
+defmodule LeftNoteServer.Note do
   @moduledoc false
   use Ecto.Schema
+
   import Ecto.Changeset
+  import LeftNoteServer.NoteFields
 
   alias LeftNoteServer.{Repo, Helper}
 
@@ -9,14 +25,7 @@ defmodule LeftNoteServer.Notes do
   @foreign_key_type :binary_id
 
   schema "notes" do
-    field :title, :string
-    field :description, :string
-    field :content, :string
-    field :created_at, :naive_datetime
-    field :updated_at, :naive_datetime
-    field :is_archived, :boolean
-    belongs_to :notebooks, LeftNoteServer.Notebooks, foreign_key: :notebook_id
-    many_to_many :tags, LeftNoteServer.Tags, join_through: "note_tags"
+    fields()
   end
 
   @doc false
@@ -40,15 +49,14 @@ defmodule LeftNoteServer.Notes do
   end
 
   def update(id, params) when is_binary(id), do: Repo.get(__MODULE__, id) |> update(params)
-
   def update(note, params) when is_map(note), do: note |> changeset(params) |> Repo.update()
 
   def delete(id) when is_binary(id), do: Repo.get(__MODULE__, id) |> delete()
-
   def delete(note) when is_map(note), do: note |> Repo.delete()
-  def render(note, opts \\ [])
+
+  def render(note, opts \\ {})
   def render(note, opts) when is_list(note), do: Enum.map(note, &render(&1, opts))
-  def render(%{__cardinality__: _}, _opts), do: nil
+  def render(%Ecto.Association.NotLoaded{}, _opts), do: nil
 
   def render(note, opts) when is_struct(note),
     do: Map.from_struct(note) |> Map.drop([:__meta_data__]) |> render(opts)
@@ -70,5 +78,20 @@ defmodule LeftNoteServer.Notes do
     data = if opts[:include_content], do: Map.put(data, :content, note[:content]), else: data
 
     data
+  end
+end
+
+# Schema exclude content of note
+defmodule LeftNoteServer.NoteHasContent do
+  @moduledoc false
+  use Ecto.Schema
+
+  import LeftNoteServer.NoteFields
+
+  alias LeftNoteServer.{Repo, Helper}
+
+  schema "notes" do
+    fields()
+    field :content, :string
   end
 end
